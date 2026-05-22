@@ -205,6 +205,8 @@ jobs:
     runs-on: [self-hosted, linux, homelab]
     needs: [check-story-id, quality, unit-tests, approval, deploy-prod, create-release]
     if: always()
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Evaluate pipeline result
         env:
@@ -238,8 +240,10 @@ jobs:
              [ "$DEPLOY" = "success" ] && \
              [ "$RELEASE" = "success" ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ **Pipeline concluído. Merge liberado para \`master\`.**" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Pipeline concluído. Convertendo PR para pronta para merge...**" >> $GITHUB_STEP_SUMMARY
             echo "🎫 História: \`$STORY_ID\`" >> $GITHUB_STEP_SUMMARY
+            gh pr ready "${{ github.event.pull_request.number }}"
+            echo "✅ **PR liberada para merge em \`master\`.**" >> $GITHUB_STEP_SUMMARY
           else
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "❌ **Pipeline falhou. Merge bloqueado.**" >> $GITHUB_STEP_SUMMARY

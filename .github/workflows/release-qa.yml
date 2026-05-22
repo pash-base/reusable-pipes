@@ -159,9 +159,10 @@ jobs:
               --base master \
               --head "$RELEASE_BRANCH" \
               --title "PR - release/v${VERSION} -> master" \
-              --body-file /tmp/master-pr-body.md)
-            echo "## 🚢 PR para master Criada" >> $GITHUB_STEP_SUMMARY
-            echo "PR criada: $PR_URL" >> $GITHUB_STEP_SUMMARY
+              --body-file /tmp/master-pr-body.md \
+              --draft)
+            echo "## 🚢 PR para master Criada (rascunho)" >> $GITHUB_STEP_SUMMARY
+            echo "PR criada como rascunho — merge bloqueado até a Production Gate passar: $PR_URL" >> $GITHUB_STEP_SUMMARY
           else
             echo "ℹ️ PR para master já existe." >> $GITHUB_STEP_SUMMARY
           fi
