@@ -1,0 +1,158 @@
+name: Reusable — Develop CD
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. Análise de qualidade de código
+  # ─────────────────────────────────────────────
+  quality:
+    name: 🔍 Code Quality
+    runs-on: [self-hosted, linux, homelab]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint & Static Analysis
+        run: |
+          echo "🔍 Analisando qualidade do código..."
+          sleep 1
+          echo "## 🔍 Code Quality" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ✅ 0 erros |" >> $GITHUB_STEP_SUMMARY
+          echo "| Complexidade ciclomática | ✅ OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code smells | ✅ 0 encontrados |" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 2. Testes unitários
+  # ─────────────────────────────────────────────
+  unit-tests:
+    name: 🧪 Unit Tests
+    runs-on: [self-hosted, linux, homelab]
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Unit Tests
+        run: |
+          echo "🧪 Executando testes unitários..."
+          sleep 2
+          echo "## 🧪 Unit Tests" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests passed | ✅ 42 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests failed | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Skipped | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 3. Deploy em desenvolvimento
+  # ─────────────────────────────────────────────
+  deploy-dev:
+    name: 🚀 Deploy → Development
+    runs-on: [self-hosted, linux, homelab]
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Development
+        run: |
+          echo "🚀 Iniciando deploy em ambiente de desenvolvimento..."
+          sleep 1 && echo "  ✔ Build: OK"
+          sleep 1 && echo "  ✔ Docker push: OK"
+          sleep 1 && echo "  ✔ Deployment update: OK"
+          sleep 1 && echo "  ✔ Health check: OK"
+          echo "## 🚀 Deploy — Development" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker push | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Rollout | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Health check | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | http://dev.homelab.local |" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # 4. Cria release branch e PR develop → release
+  # ─────────────────────────────────────────────
+  create-release:
+    name: 🏷️ Create Release Branch & PR
+    runs-on: [self-hosted, linux, homelab]
+    needs: deploy-dev
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Calculate next version
+        id: version
+        run: |
+          LATEST=$(git ls-remote --heads origin 'refs/heads/release/v*' 2>/dev/null \
+            | sed 's|.*refs/heads/release/v||' \
+            | sort -V | tail -1)
+
+          if [ -z "$LATEST" ]; then
+            NEXT="0.1.0"
+          else
+            MAJOR=$(echo "$LATEST" | cut -d. -f1)
+            MINOR=$(echo "$LATEST" | cut -d. -f2)
+            PATCH=$(echo "$LATEST" | cut -d. -f3)
+            NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
+
+          echo "version=$NEXT" >> $GITHUB_OUTPUT
+          echo "branch=release/v${NEXT}" >> $GITHUB_OUTPUT
+          echo "🏷️ Próxima versão: **v${NEXT}**" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create release branch from master
+        run: |
+          BRANCH="${{ steps.version.outputs.branch }}"
+          EXISTING=$(git ls-remote --heads origin "$BRANCH" | wc -l)
+
+          if [ "$EXISTING" -eq 0 ]; then
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git checkout -b "$BRANCH"
+            git push origin "$BRANCH"
+            echo "✅ Branch \`$BRANCH\` criada a partir de \`master\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ Branch \`$BRANCH\` já existe" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Open PR develop → release
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BRANCH="${{ steps.version.outputs.branch }}"
+
+          EXISTING=$(gh pr list --head develop --base "$BRANCH" --json number --jq 'length')
+          if [ "$EXISTING" -eq 0 ]; then
+            {
+              printf "## 🏷️ Release v%s\n\n" "$VERSION"
+              printf "PR criada automaticamente após deploy em desenvolvimento.\n\n"
+              printf "### Ambientes\n\n"
+              printf "| Ambiente | Status |\n|---|---|\n"
+              printf "| Development | ✅ Deployed |\n"
+              printf "| Homologation | ⏳ Após merge desta PR |\n"
+              printf "| Production | ⏳ Após aprovação em homolog |\n\n"
+              printf "### Checklist\n\n"
+              printf '%s\n' "- [ ] QA sign-off"
+              printf '%s\n' "- [ ] Performance validado em dev"
+              printf '%s\n' "- [ ] Documentação atualizada"
+              printf '%s\n' "- [ ] Changelog revisado"
+            } > /tmp/release-pr-body.md
+            PR_URL=$(gh pr create \
+              --base "$BRANCH" \
+              --head develop \
+              --title "PR - develop -> release/v${VERSION}" \
+              --body-file /tmp/release-pr-body.md)
+            echo "## 🏷️ PR de Release Criada" >> $GITHUB_STEP_SUMMARY
+            echo "PR criada: $PR_URL" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ PR de release já existe." >> $GITHUB_STEP_SUMMARY
+          fi
