@@ -130,6 +130,12 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           BRANCH="${{ steps.version.outputs.branch }}"
 
+          COMMIT_DIFF=$(git rev-list --count "origin/${BRANCH}..origin/develop" 2>/dev/null || echo 0)
+          if [ "$COMMIT_DIFF" -eq 0 ]; then
+            echo "ℹ️ develop não tem commits adicionais em relação a \`$BRANCH\`. PR pulada." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
           EXISTING=$(gh pr list --head develop --base "$BRANCH" --json number --jq 'length')
           if [ "$EXISTING" -eq 0 ]; then
             {
