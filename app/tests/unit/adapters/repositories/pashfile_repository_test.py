@@ -51,7 +51,7 @@ def test_should_return_pash_app_model_when_pashfile_is_valid(mocker):
     assert result.helm.chart_name == "pash-stacks"
     assert result.helm.chart_version == "0.1.0"
     assert "dev" in result.helm.environments
-    mock_logger.info.assert_called_once()
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
 
 
@@ -60,9 +60,14 @@ def test_should_raise_file_not_found_when_path_does_not_exist(mocker):
     mock_logger = mocker.MagicMock()
     repo = PashfileRepository(logger=mock_logger)
 
-    # Act & Assert
+    path = "/nonexistent/path/.pashfile"
+
+    # Act
     with pytest.raises(FileNotFoundError):
-        repo.load("/nonexistent/path/.pashfile")
+        repo.load(path)
+
+    # Assert
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
 
 
 def test_should_load_all_environments_when_pashfile_has_three_envs(mocker):
@@ -80,6 +85,7 @@ def test_should_load_all_environments_when_pashfile_has_three_envs(mocker):
     # Assert
     assert set(result.helm.environments.keys()) == {"dev", "hom", "prd"}
     assert result.helm.environments["prd"].values_file == "app/_environments/prd/values-prd.yaml"
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
 
 
@@ -97,6 +103,7 @@ def test_should_derive_type_from_repo_name_when_type_not_in_metadata(mocker):
 
     # Assert
     assert result.type == "portal"
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
 
 
@@ -114,6 +121,7 @@ def test_should_derive_shortname_from_repo_name_when_shortname_not_in_metadata(m
 
     # Assert
     assert result.shortname == "platform"
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
 
 
@@ -134,6 +142,7 @@ def test_should_use_explicit_type_when_type_is_in_metadata(mocker):
 
     # Assert
     assert result.type == "py-mcp"
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
 
 
