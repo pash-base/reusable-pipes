@@ -14,5 +14,5 @@ class ArgocdClient(IArgocdClient):
         headers = {"Authorization": f"Bearer {self._config.argocd_token}"}
         verify_tls = not self._config.argocd_insecure
         self._logger.info(f"Sincronizando ArgoCD app: {app_name}")
-        response = requests.post(url, headers=headers, verify=verify_tls, timeout=30)
+        response = requests.post(url, headers=headers, json={}, verify=verify_tls, timeout=30)
         response.raise_for_status()
