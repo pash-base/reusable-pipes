@@ -9,45 +9,21 @@ permissions:
 
 jobs:
   # ─────────────────────────────────────────────
-  # 1. Análise de qualidade de código
-  # ─────────────────────────────────────────────
-  quality:
-    name: 🔍 Code Quality
-    runs-on: [self-hosted, linux, homelab]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Lint & Static Analysis
-        run: |
-          echo "🔍 Analisando qualidade do código..."
-          sleep 1
-          echo "## 🔍 Code Quality" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ✅ 0 erros |" >> $GITHUB_STEP_SUMMARY
-          echo "| Complexidade ciclomática | ✅ OK |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code smells | ✅ 0 encontrados |" >> $GITHUB_STEP_SUMMARY
-
-  # ─────────────────────────────────────────────
-  # 2. Testes unitários
+  # 1. Validação (qualidade + testes unitários)
   # ─────────────────────────────────────────────
   unit-tests:
-    name: 🧪 Unit Tests
+    name: 🧪 Validate
     runs-on: [self-hosted, linux, homelab]
-    needs: quality
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Unit Tests
+      - name: Instalar dependências e validar
         run: |
-          echo "🧪 Executando testes unitários..."
-          sleep 2
-          echo "## 🧪 Unit Tests" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests passed | ✅ 42 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests failed | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Skipped | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
+          cd app
+          pip install -e . --quiet
+          pip install pytest pytest-cov black flake8 --quiet
+          make validate
+        working-directory: ${{ github.workspace }}
 
   # ─────────────────────────────────────────────
   # 3. Deploy em desenvolvimento
