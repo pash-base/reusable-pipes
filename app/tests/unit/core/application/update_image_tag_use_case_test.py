@@ -5,7 +5,7 @@ from core.application.update_image_tag_use_case import UpdateImageTagUseCase
 from core.domain.models.pash_app_model import PashAppModel, HelmConfig, EnvironmentConfig
 
 
-def _make_app(env_values_file: str) -> PashAppModel:
+def _make_app(env: str, env_values_file: str) -> PashAppModel:
     return PashAppModel(
         sigla="DOC",
         app_name="portal-platform",
@@ -15,7 +15,7 @@ def _make_app(env_values_file: str) -> PashAppModel:
             chart_name="pash-stacks",
             chart_version="0.1.0",
             environments={
-                "dev": EnvironmentConfig(values_file=env_values_file),
+                env: EnvironmentConfig(values_file=env_values_file),
             },
         ),
     )
@@ -30,11 +30,11 @@ def test_should_update_image_tag_and_commit_when_env_is_dev(mocker):
         yaml.dump({"image": {"tag": "old-tag", "repository": "ghcr.io/test"}}, f)
         values_path = f.name
 
-    app = _make_app(values_path)
+    app = _make_app("dev", values_path)
     use_case = UpdateImageTagUseCase(github_client=mock_github, logger=mock_logger)
 
     # Act
-    use_case.execute(app=app, env="dev", tag="new-sha")
+    use_case.execute(app=app, env="dev", tag="new-sha", branch="develop")
 
     # Assert
     with open(values_path, "r") as f:
@@ -45,7 +45,7 @@ def test_should_update_image_tag_and_commit_when_env_is_dev(mocker):
         message="chore(gitops): atualizar image.tag para new-sha em dev",
         branch="develop",
     )
-    mock_logger.info.assert_called_once()
+    mock_logger.info.assert_called_once_with(f"Atualizando image.tag para new-sha em {values_path}")
     os.unlink(values_path)
 
 
@@ -58,34 +58,26 @@ def test_should_push_to_master_when_env_is_prd(mocker):
         yaml.dump({"image": {"tag": "old-tag", "repository": "ghcr.io/test"}}, f)
         values_path = f.name
 
-    app = PashAppModel(
-        sigla="DOC",
-        app_name="portal-platform",
-        repo="pash-doc/pash-doc-portal-platform",
-        helm=HelmConfig(
-            chart_repo="pash-inf/pash-inf-helm-charts",
-            chart_name="pash-stacks",
-            chart_version="0.1.0",
-            environments={
-                "prd": EnvironmentConfig(values_file=values_path),
-            },
-        ),
-    )
+    app = _make_app("prd", values_path)
     use_case = UpdateImageTagUseCase(github_client=mock_github, logger=mock_logger)
 
     # Act
-    use_case.execute(app=app, env="prd", tag="v1.0.0")
+    use_case.execute(app=app, env="prd", tag="v1.0.0", branch="master")
 
     # Assert
+    with open(values_path, "r") as f:
+        saved = yaml.safe_load(f)
+    assert saved["image"]["tag"] == "v1.0.0"
     mock_github.commit_and_push.assert_called_once_with(
         file_path=values_path,
         message="chore(gitops): atualizar image.tag para v1.0.0 em prd",
         branch="master",
     )
+    mock_logger.info.assert_called_once_with(f"Atualizando image.tag para v1.0.0 em {values_path}")
     os.unlink(values_path)
 
 
-def test_should_push_to_release_current_when_env_is_hom(mocker):
+def test_should_push_to_given_branch_when_env_is_hom(mocker):
     # Arrange
     mock_github = mocker.MagicMock()
     mock_logger = mocker.MagicMock()
@@ -94,28 +86,20 @@ def test_should_push_to_release_current_when_env_is_hom(mocker):
         yaml.dump({"image": {"tag": "old", "repository": "ghcr.io/test"}}, f)
         values_path = f.name
 
-    app = PashAppModel(
-        sigla="DOC",
-        app_name="portal-platform",
-        repo="pash-doc/pash-doc-portal-platform",
-        helm=HelmConfig(
-            chart_repo="repo",
-            chart_name="chart",
-            chart_version="1.0.0",
-            environments={
-                "hom": EnvironmentConfig(values_file=values_path),
-            },
-        ),
-    )
+    app = _make_app("hom", values_path)
     use_case = UpdateImageTagUseCase(github_client=mock_github, logger=mock_logger)
 
     # Act
-    use_case.execute(app=app, env="hom", tag="hom-sha")
+    use_case.execute(app=app, env="hom", tag="hom-sha", branch="release/v1.0.0")
 
     # Assert
+    with open(values_path, "r") as f:
+        saved = yaml.safe_load(f)
+    assert saved["image"]["tag"] == "hom-sha"
     mock_github.commit_and_push.assert_called_once_with(
         file_path=values_path,
         message="chore(gitops): atualizar image.tag para hom-sha em hom",
-        branch="release/current",
+        branch="release/v1.0.0",
     )
+    mock_logger.info.assert_called_once_with(f"Atualizando image.tag para hom-sha em {values_path}")
     os.unlink(values_path)

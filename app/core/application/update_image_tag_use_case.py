@@ -10,7 +10,7 @@ class UpdateImageTagUseCase(IUpdateImageTagUseCase):
         self._github_client = github_client
         self._logger = logger
 
-    def execute(self, app: PashAppModel, env: str, tag: str) -> None:
+    def execute(self, app: PashAppModel, env: str, tag: str, branch: str) -> None:
         env_cfg = app.helm.environments[env]
         values_path = env_cfg.values_file
         self._logger.info(f"Atualizando image.tag para {tag} em {values_path}")
@@ -26,5 +26,5 @@ class UpdateImageTagUseCase(IUpdateImageTagUseCase):
         self._github_client.commit_and_push(
             file_path=values_path,
             message=f"chore(gitops): atualizar image.tag para {tag} em {env}",
-            branch="develop" if env == "dev" else ("release/current" if env == "hom" else "master"),
+            branch=branch,
         )
