@@ -154,4 +154,5 @@ def test_should_use_explicit_shortname_when_shortname_is_in_metadata(mocker):
 
     # Assert
     assert result.shortname == "override"
+    mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
