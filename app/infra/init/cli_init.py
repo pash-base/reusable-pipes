@@ -1,3 +1,4 @@
+import json
 import click
 from interfaces.core.application.i_parse_pashfile_use_case import IParsePashfileUseCase
 from interfaces.core.application.i_build_image_use_case import IBuildImageUseCase
@@ -76,8 +77,6 @@ class CliInit:
             if env:
                 names = {k: v for k, v in names.items() if k == env}
             if output == "json":
-                import json
-
                 click.echo(json.dumps(names))
             else:
                 for env_name, app_name in names.items():

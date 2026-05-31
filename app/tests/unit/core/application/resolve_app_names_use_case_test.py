@@ -46,18 +46,26 @@ def test_should_return_app_name_for_each_env_when_type_and_shortname_are_explici
     mock_logger.info.assert_called_once_with("Executando ResolveAppNamesUseCase")
 
 
-def test_should_derive_type_and_shortname_from_repo_when_fields_are_none(mocker):
+def test_should_build_app_name_when_type_and_shortname_come_from_repository(mocker):
     # Arrange
     mock_logger = mocker.MagicMock()
     use_case = ResolveAppNamesUseCase(logger=mock_logger)
     helm = _make_helm({"dev": EnvironmentConfig("dev.yaml")})
-    app = PashAppModel(sigla="DOC", app_name="portal-platform", repo="pash-doc/pash-doc-portal-platform", helm=helm)
+    app = PashAppModel(
+        sigla="DOC",
+        app_name="portal-platform",
+        repo="pash-doc/pash-doc-portal-platform",
+        helm=helm,
+        type="portal",
+        shortname="platform",
+    )
 
     # Act
     result = use_case.execute(app)
 
     # Assert
     assert result == {"dev": "doc-portal-platform-dev"}
+    mock_logger.info.assert_called_once_with("Executando ResolveAppNamesUseCase")
 
 
 def test_should_return_single_env_when_only_one_environment_exists(mocker):
@@ -79,6 +87,7 @@ def test_should_return_single_env_when_only_one_environment_exists(mocker):
 
     # Assert
     assert result == {"prd": "inf-py-mcp-data-prd"}
+    mock_logger.info.assert_called_once_with("Executando ResolveAppNamesUseCase")
 
 
 def test_should_lowercase_sigla_when_sigla_is_uppercase(mocker):
@@ -100,20 +109,29 @@ def test_should_lowercase_sigla_when_sigla_is_uppercase(mocker):
 
     # Assert
     assert all(name.startswith("doc-") for name in result.values())
+    mock_logger.info.assert_called_once_with("Executando ResolveAppNamesUseCase")
 
 
-def test_should_handle_compound_shortname_when_derived_from_repo(mocker):
+def test_should_handle_compound_shortname_when_shortname_has_multiple_parts(mocker):
     # Arrange
     mock_logger = mocker.MagicMock()
     use_case = ResolveAppNamesUseCase(logger=mock_logger)
     helm = _make_helm({"dev": EnvironmentConfig("dev.yaml"), "hom": EnvironmentConfig("hom.yaml")})
-    app = PashAppModel(sigla="INF", app_name="mcp-my-service", repo="pash-inf/pash-inf-py-mcp-my-service", helm=helm)
+    app = PashAppModel(
+        sigla="INF",
+        app_name="mcp-my-service",
+        repo="pash-inf/pash-inf-py-mcp-my-service",
+        helm=helm,
+        type="py-mcp",
+        shortname="my-service",
+    )
 
     # Act
     result = use_case.execute(app)
 
     # Assert
     assert result == {"dev": "inf-py-mcp-my-service-dev", "hom": "inf-py-mcp-my-service-hom"}
+    mock_logger.info.assert_called_once_with("Executando ResolveAppNamesUseCase")
 
 
 def test_should_call_logger_exactly_once_when_execute_is_called(mocker):

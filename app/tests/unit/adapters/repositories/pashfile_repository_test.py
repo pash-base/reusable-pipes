@@ -135,3 +135,23 @@ def test_should_use_explicit_type_when_type_is_in_metadata(mocker):
     # Assert
     assert result.type == "py-mcp"
     os.unlink(path)
+
+
+def test_should_use_explicit_shortname_when_shortname_is_in_metadata(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    pashfile_with_shortname = dict(_VALID_PASHFILE)
+    pashfile_with_shortname["metadata"] = dict(_VALID_PASHFILE["metadata"])
+    pashfile_with_shortname["metadata"]["shortname"] = "override"
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(pashfile_with_shortname, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.shortname == "override"
+    os.unlink(path)
