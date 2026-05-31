@@ -1,0 +1,16 @@
+[run]
+source = adapters,core,infra/tools
+omit =
+    main.py
+    infra/init/ioc_init.py
+    infra/init/cli_init.py
+    tests/*
+    interfaces/*
+
+[report]
+fail_under = 90
+show_missing = True
+exclude_lines =
+    pragma: no cover
+    @abstractmethod
+    pass
