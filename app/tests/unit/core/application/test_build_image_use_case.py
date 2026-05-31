@@ -56,3 +56,4 @@ def test_should_build_with_correct_image_tag_when_tag_is_sha():
             ["docker", "build", "-t", "ghcr.io/org/my-app:deadbeef", "app/"],
             check=True,
         )
+    mock_logger.info.assert_called_once_with("Construindo imagem: ghcr.io/org/my-app:deadbeef")

@@ -32,4 +32,5 @@ def test_should_call_repo_with_custom_path_when_path_is_provided():
 
     # Assert
     mock_repo.load.assert_called_once_with("custom/.pashfile")
+    mock_logger.info.assert_called_once_with("Executando ParsePashfileUseCase")
     assert result == expected_model

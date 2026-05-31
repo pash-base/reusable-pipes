@@ -1,3 +1,4 @@
+import logging
 import pytest
 from infra.tools.logger_tool import LoggerTool
 
@@ -49,9 +50,11 @@ def test_should_call_warning_without_error_when_message_is_provided():
 def test_should_use_debug_level_when_pash_log_level_env_is_debug(monkeypatch):
     # Arrange
     monkeypatch.setenv("PASH_LOG_LEVEL", "DEBUG")
+    logging.root.handlers.clear()
 
     # Act
     tool = LoggerTool()
 
     # Assert
     assert tool._logger is not None
+    assert tool._logger.getEffectiveLevel() == logging.DEBUG

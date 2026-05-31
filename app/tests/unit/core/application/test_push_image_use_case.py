@@ -56,3 +56,4 @@ def test_should_push_with_correct_image_name_when_repo_has_org():
             ["docker", "push", "ghcr.io/my-org/my-service:v1.2.3"],
             check=True,
         )
+    mock_logger.info.assert_called_once_with("Publicando imagem: ghcr.io/my-org/my-service:v1.2.3")
