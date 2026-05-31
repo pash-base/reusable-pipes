@@ -1,11 +1,11 @@
 import requests
 from interfaces.adapters.clients.i_argocd_client import IArgocdClient
-from infra.tools.config_tool import ConfigTool
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_config_tool import IConfigTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class ArgocdClient(IArgocdClient):
-    def __init__(self, config: ConfigTool, logger: LoggerTool):
+    def __init__(self, config: IConfigTool, logger: ILoggerTool):
         self._config = config
         self._logger = logger
 

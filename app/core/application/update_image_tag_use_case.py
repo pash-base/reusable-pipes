@@ -2,11 +2,11 @@ import yaml
 from interfaces.core.application.i_update_image_tag_use_case import IUpdateImageTagUseCase
 from interfaces.adapters.clients.i_github_client import IGithubClient
 from core.domain.models.pash_app_model import PashAppModel
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class UpdateImageTagUseCase(IUpdateImageTagUseCase):
-    def __init__(self, github_client: IGithubClient, logger: LoggerTool):
+    def __init__(self, github_client: IGithubClient, logger: ILoggerTool):
         self._github_client = github_client
         self._logger = logger
 

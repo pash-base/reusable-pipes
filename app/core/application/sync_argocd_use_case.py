@@ -1,10 +1,10 @@
 from interfaces.core.application.i_sync_argocd_use_case import ISyncArgoCDUseCase
 from interfaces.adapters.clients.i_argocd_client import IArgocdClient
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class SyncArgoCDUseCase(ISyncArgoCDUseCase):
-    def __init__(self, argocd_client: IArgocdClient, logger: LoggerTool):
+    def __init__(self, argocd_client: IArgocdClient, logger: ILoggerTool):
         self._argocd_client = argocd_client
         self._logger = logger
 

@@ -1,11 +1,11 @@
 import subprocess
 from interfaces.core.application.i_push_image_use_case import IPushImageUseCase
 from core.domain.models.pash_app_model import PashAppModel
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class PushImageUseCase(IPushImageUseCase):
-    def __init__(self, logger: LoggerTool):
+    def __init__(self, logger: ILoggerTool):
         self._logger = logger
 
     def execute(self, app: PashAppModel, tag: str) -> None:

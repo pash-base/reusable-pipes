@@ -4,7 +4,7 @@ from interfaces.core.application.i_build_image_use_case import IBuildImageUseCas
 from interfaces.core.application.i_push_image_use_case import IPushImageUseCase
 from interfaces.core.application.i_update_image_tag_use_case import IUpdateImageTagUseCase
 from interfaces.core.application.i_sync_argocd_use_case import ISyncArgoCDUseCase
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class CliInit:
@@ -15,7 +15,7 @@ class CliInit:
         push_uc: IPushImageUseCase,
         update_uc: IUpdateImageTagUseCase,
         sync_uc: ISyncArgoCDUseCase,
-        logger: LoggerTool,
+        logger: ILoggerTool,
     ):
         self._parse_uc = parse_uc
         self._build_uc = build_uc
