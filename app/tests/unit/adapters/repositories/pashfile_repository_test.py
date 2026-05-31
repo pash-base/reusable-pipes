@@ -81,3 +81,57 @@ def test_should_load_all_environments_when_pashfile_has_three_envs(mocker):
     assert set(result.helm.environments.keys()) == {"dev", "hom", "prd"}
     assert result.helm.environments["prd"].values_file == "app/_environments/prd/values-prd.yaml"
     os.unlink(path)
+
+
+def test_should_derive_type_from_repo_name_when_type_not_in_metadata(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(_VALID_PASHFILE, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.type == "portal"
+    os.unlink(path)
+
+
+def test_should_derive_shortname_from_repo_name_when_shortname_not_in_metadata(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(_VALID_PASHFILE, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.shortname == "platform"
+    os.unlink(path)
+
+
+def test_should_use_explicit_type_when_type_is_in_metadata(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    pashfile_with_type = dict(_VALID_PASHFILE)
+    pashfile_with_type["metadata"] = dict(_VALID_PASHFILE["metadata"])
+    pashfile_with_type["metadata"]["type"] = "py-mcp"
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(pashfile_with_type, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.type == "py-mcp"
+    os.unlink(path)

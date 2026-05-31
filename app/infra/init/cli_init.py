@@ -4,6 +4,7 @@ from interfaces.core.application.i_build_image_use_case import IBuildImageUseCas
 from interfaces.core.application.i_push_image_use_case import IPushImageUseCase
 from interfaces.core.application.i_update_image_tag_use_case import IUpdateImageTagUseCase
 from interfaces.core.application.i_sync_argocd_use_case import ISyncArgoCDUseCase
+from interfaces.core.application.i_resolve_app_names_use_case import IResolveAppNamesUseCase
 from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
@@ -15,6 +16,7 @@ class CliInit:
         push_uc: IPushImageUseCase,
         update_uc: IUpdateImageTagUseCase,
         sync_uc: ISyncArgoCDUseCase,
+        resolve_uc: IResolveAppNamesUseCase,
         logger: ILoggerTool,
     ):
         self._parse_uc = parse_uc
@@ -22,6 +24,7 @@ class CliInit:
         self._push_uc = push_uc
         self._update_uc = update_uc
         self._sync_uc = sync_uc
+        self._resolve_uc = resolve_uc
         self._logger = logger
 
     def run(self):
@@ -62,5 +65,22 @@ class CliInit:
         @click.option("--app-name", required=True, help="Nome da Application ArgoCD")
         def sync_argocd(app_name):
             self._sync_uc.execute(app_name=app_name)
+
+        @cli.command("resolve-app-names")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        @click.option("--env", default=None, help="Filtrar por ambiente específico (ex: dev, hom, prd)")
+        @click.option("--output", default="text", type=click.Choice(["text", "json"]), help="Formato de saída")
+        def resolve_app_names(path, env, output):
+            app = self._parse_uc.execute(path)
+            names = self._resolve_uc.execute(app=app)
+            if env:
+                names = {k: v for k, v in names.items() if k == env}
+            if output == "json":
+                import json
+
+                click.echo(json.dumps(names))
+            else:
+                for env_name, app_name in names.items():
+                    click.echo(f"{env_name}={app_name}")
 
         cli()

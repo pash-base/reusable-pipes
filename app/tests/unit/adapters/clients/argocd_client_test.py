@@ -20,6 +20,7 @@ def test_should_post_to_argocd_sync_endpoint_when_sync_is_called(mocker):
     mock_requests.post.assert_called_once_with(
         "https://argocd.local/api/v1/applications/portal-platform-dev/sync",
         headers={"Authorization": "Bearer test-token"},
+        json={},
         verify=True,
         timeout=30,
     )
@@ -45,6 +46,7 @@ def test_should_skip_tls_verification_when_argocd_insecure_is_true(mocker):
     mock_requests.post.assert_called_once_with(
         "https://argocd.local/api/v1/applications/my-app/sync",
         headers={"Authorization": "Bearer test-token"},
+        json={},
         verify=False,
         timeout=30,
     )

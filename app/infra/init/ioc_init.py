@@ -8,6 +8,7 @@ from core.application.build_image_use_case import BuildImageUseCase
 from core.application.push_image_use_case import PushImageUseCase
 from core.application.update_image_tag_use_case import UpdateImageTagUseCase
 from core.application.sync_argocd_use_case import SyncArgoCDUseCase
+from core.application.resolve_app_names_use_case import ResolveAppNamesUseCase
 from infra.init.cli_init import CliInit
 
 
@@ -24,6 +25,7 @@ class IocInit:
         push_uc = PushImageUseCase(logger=logger)
         update_uc = UpdateImageTagUseCase(github_client=github_client, logger=logger)
         sync_uc = SyncArgoCDUseCase(argocd_client=argocd_client, logger=logger)
+        resolve_uc = ResolveAppNamesUseCase(logger=logger)
 
         return CliInit(
             parse_uc=parse_uc,
@@ -31,5 +33,6 @@ class IocInit:
             push_uc=push_uc,
             update_uc=update_uc,
             sync_uc=sync_uc,
+            resolve_uc=resolve_uc,
             logger=logger,
         )

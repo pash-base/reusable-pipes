@@ -22,9 +22,17 @@ class PashfileRepository(IPashfileRepository):
             chart_version=helm_data["chartVersion"],
             environments=envs,
         )
+
+        repo_name = metadata.get("repo", "")
+        parts = repo_name.split("/")[-1].split("-") if repo_name else []
+        repo_type = metadata.get("type") or (parts[2] if len(parts) >= 3 else None)
+        shortname = metadata.get("shortname") or ("-".join(parts[3:]) if len(parts) >= 4 else None)
+
         return PashAppModel(
             sigla=metadata["sigla"],
             app_name=metadata["appName"],
-            repo=metadata["repo"],
+            repo=repo_name,
             helm=helm,
+            type=repo_type,
+            shortname=shortname,
         )
