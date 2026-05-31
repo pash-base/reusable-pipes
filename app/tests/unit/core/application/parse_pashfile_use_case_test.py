@@ -1,12 +1,11 @@
-from unittest.mock import MagicMock
 from core.application.parse_pashfile_use_case import ParsePashfileUseCase
 
 
-def test_should_return_pash_app_model_when_pashfile_is_valid():
+def test_should_return_pash_app_model_when_pashfile_is_valid(mocker):
     # Arrange
-    mock_repo = MagicMock()
-    mock_logger = MagicMock()
-    expected_model = MagicMock()
+    mock_repo = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
+    expected_model = mocker.MagicMock()
     mock_repo.load.return_value = expected_model
     use_case = ParsePashfileUseCase(pashfile_repo=mock_repo, logger=mock_logger)
 
@@ -19,11 +18,11 @@ def test_should_return_pash_app_model_when_pashfile_is_valid():
     assert result == expected_model
 
 
-def test_should_call_repo_with_custom_path_when_path_is_provided():
+def test_should_call_repo_with_custom_path_when_path_is_provided(mocker):
     # Arrange
-    mock_repo = MagicMock()
-    mock_logger = MagicMock()
-    expected_model = MagicMock()
+    mock_repo = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
+    expected_model = mocker.MagicMock()
     mock_repo.load.return_value = expected_model
     use_case = ParsePashfileUseCase(pashfile_repo=mock_repo, logger=mock_logger)
 

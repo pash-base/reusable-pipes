@@ -1,11 +1,10 @@
-from unittest.mock import MagicMock
 from core.application.sync_argocd_use_case import SyncArgoCDUseCase
 
 
-def test_should_call_argocd_sync_when_app_name_is_valid():
+def test_should_call_argocd_sync_when_app_name_is_valid(mocker):
     # Arrange
-    mock_argocd = MagicMock()
-    mock_logger = MagicMock()
+    mock_argocd = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
     use_case = SyncArgoCDUseCase(argocd_client=mock_argocd, logger=mock_logger)
 
     # Act
@@ -16,10 +15,10 @@ def test_should_call_argocd_sync_when_app_name_is_valid():
     mock_logger.info.assert_called_once_with("Sincronizando app ArgoCD: portal-platform-dev")
 
 
-def test_should_log_app_name_when_syncing():
+def test_should_log_app_name_when_syncing(mocker):
     # Arrange
-    mock_argocd = MagicMock()
-    mock_logger = MagicMock()
+    mock_argocd = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
     use_case = SyncArgoCDUseCase(argocd_client=mock_argocd, logger=mock_logger)
 
     # Act

@@ -2,7 +2,6 @@ import os
 import tempfile
 import pytest
 import yaml
-from unittest.mock import MagicMock
 from adapters.repositories.pashfile_repository import PashfileRepository
 from core.domain.models.pash_app_model import PashAppModel
 
@@ -32,9 +31,9 @@ _VALID_PASHFILE = {
 }
 
 
-def test_should_return_pash_app_model_when_pashfile_is_valid():
+def test_should_return_pash_app_model_when_pashfile_is_valid(mocker):
     # Arrange
-    mock_logger = MagicMock()
+    mock_logger = mocker.MagicMock()
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump(_VALID_PASHFILE, f)
         path = f.name
@@ -56,9 +55,9 @@ def test_should_return_pash_app_model_when_pashfile_is_valid():
     os.unlink(path)
 
 
-def test_should_raise_file_not_found_when_path_does_not_exist():
+def test_should_raise_file_not_found_when_path_does_not_exist(mocker):
     # Arrange
-    mock_logger = MagicMock()
+    mock_logger = mocker.MagicMock()
     repo = PashfileRepository(logger=mock_logger)
 
     # Act & Assert
@@ -66,9 +65,9 @@ def test_should_raise_file_not_found_when_path_does_not_exist():
         repo.load("/nonexistent/path/.pashfile")
 
 
-def test_should_load_all_environments_when_pashfile_has_three_envs():
+def test_should_load_all_environments_when_pashfile_has_three_envs(mocker):
     # Arrange
-    mock_logger = MagicMock()
+    mock_logger = mocker.MagicMock()
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump(_VALID_PASHFILE, f)
         path = f.name

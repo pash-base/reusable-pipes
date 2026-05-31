@@ -1,6 +1,5 @@
 import os
 import tempfile
-from unittest.mock import MagicMock, patch, call
 import yaml
 from core.application.update_image_tag_use_case import UpdateImageTagUseCase
 from core.domain.models.pash_app_model import PashAppModel, HelmConfig, EnvironmentConfig
@@ -22,10 +21,10 @@ def _make_app(env_values_file: str) -> PashAppModel:
     )
 
 
-def test_should_update_image_tag_and_commit_when_env_is_dev():
+def test_should_update_image_tag_and_commit_when_env_is_dev(mocker):
     # Arrange
-    mock_github = MagicMock()
-    mock_logger = MagicMock()
+    mock_github = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump({"image": {"tag": "old-tag", "repository": "ghcr.io/test"}}, f)
@@ -50,10 +49,10 @@ def test_should_update_image_tag_and_commit_when_env_is_dev():
     os.unlink(values_path)
 
 
-def test_should_push_to_master_when_env_is_prd():
+def test_should_push_to_master_when_env_is_prd(mocker):
     # Arrange
-    mock_github = MagicMock()
-    mock_logger = MagicMock()
+    mock_github = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump({"image": {"tag": "old-tag", "repository": "ghcr.io/test"}}, f)
@@ -86,10 +85,10 @@ def test_should_push_to_master_when_env_is_prd():
     os.unlink(values_path)
 
 
-def test_should_push_to_release_current_when_env_is_hom():
+def test_should_push_to_release_current_when_env_is_hom(mocker):
     # Arrange
-    mock_github = MagicMock()
-    mock_logger = MagicMock()
+    mock_github = mocker.MagicMock()
+    mock_logger = mocker.MagicMock()
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         yaml.dump({"image": {"tag": "old", "repository": "ghcr.io/test"}}, f)
