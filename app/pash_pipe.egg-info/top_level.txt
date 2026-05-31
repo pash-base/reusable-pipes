@@ -1,0 +1,4 @@
+adapters
+core
+infra
+interfaces
