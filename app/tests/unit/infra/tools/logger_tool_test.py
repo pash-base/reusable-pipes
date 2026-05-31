@@ -1,0 +1,76 @@
+import logging
+import pytest
+from infra.tools.logger_tool import LoggerTool
+
+
+def test_should_create_logger_when_log_level_is_info(monkeypatch):
+    # Arrange
+    monkeypatch.setenv("PASH_LOG_LEVEL", "INFO")
+
+    # Act
+    tool = LoggerTool()
+
+    # Assert
+    assert tool._logger is not None
+    assert tool._logger.name == "pash-pipe"
+
+
+def test_should_call_info_without_error_when_message_is_provided(mocker):
+    # Arrange
+    tool = LoggerTool()
+    mock_inner = mocker.patch.object(tool._logger, "info")
+
+    # Act
+    tool.info("mensagem de info")
+
+    # Assert
+    mock_inner.assert_called_once_with("mensagem de info")
+
+
+def test_should_call_error_without_error_when_message_is_provided(mocker):
+    # Arrange
+    tool = LoggerTool()
+    mock_inner = mocker.patch.object(tool._logger, "error")
+
+    # Act
+    tool.error("mensagem de erro")
+
+    # Assert
+    mock_inner.assert_called_once_with("mensagem de erro")
+
+
+def test_should_call_debug_without_error_when_message_is_provided(mocker):
+    # Arrange
+    tool = LoggerTool()
+    mock_inner = mocker.patch.object(tool._logger, "debug")
+
+    # Act
+    tool.debug("mensagem de debug")
+
+    # Assert
+    mock_inner.assert_called_once_with("mensagem de debug")
+
+
+def test_should_call_warning_without_error_when_message_is_provided(mocker):
+    # Arrange
+    tool = LoggerTool()
+    mock_inner = mocker.patch.object(tool._logger, "warning")
+
+    # Act
+    tool.warning("mensagem de aviso")
+
+    # Assert
+    mock_inner.assert_called_once_with("mensagem de aviso")
+
+
+def test_should_use_debug_level_when_pash_log_level_env_is_debug(monkeypatch):
+    # Arrange
+    monkeypatch.setenv("PASH_LOG_LEVEL", "DEBUG")
+    logging.root.handlers.clear()
+
+    # Act
+    tool = LoggerTool()
+
+    # Assert
+    assert tool._logger is not None
+    assert tool._logger.getEffectiveLevel() == logging.DEBUG
