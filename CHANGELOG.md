@@ -7,6 +7,16 @@ seguindo [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [Unreleased]
+
+### Adicionado
+
+- **`ResolveAppNamesUseCase`**: novo use case que resolve os nomes semânticos de uma aplicação por ambiente, seguindo o padrão `<sigla_lower>-<type>-<shortname>-<env>`.
+- **`PashAppModel`**: novos campos `type` e `shortname`, derivados automaticamente de `metadata.repo` no Pashfile (padrão `pash-<SIGLA>-<type>-<shortname>`).
+- **CLI `resolve-app-names`**: novo subcomando com suporte às flags `--path`, `--env` e `--output` (`json` ou `text`).
+
+---
+
 ## [0.2.0] - 2025-01-01
 
 ### Alterado
