@@ -53,9 +53,10 @@ class CliInit:
         @click.option("--env", required=True, type=click.Choice(["dev", "hom", "prd"]))
         @click.option("--tag", required=True, help="Nova tag da imagem")
         @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
-        def update_image_tag(env, tag, path):
+        @click.option("--branch", required=True, help="Branch Git de destino para o commit GitOps")
+        def update_image_tag(env, tag, path, branch):
             app = self._parse_uc.execute(path)
-            self._update_uc.execute(app=app, env=env, tag=tag)
+            self._update_uc.execute(app=app, env=env, tag=tag, branch=branch)
 
         @cli.command("sync-argocd")
         @click.option("--app-name", required=True, help="Nome da Application ArgoCD")

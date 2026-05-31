@@ -23,6 +23,36 @@ pash-pipe update-image-tag  Atualiza image.tag no values.yaml do ambiente e comm
 pash-pipe sync-argocd       Dispara sync da Application no ArgoCD
 ```
 
+### update-image-tag
+
+```bash
+pash-pipe update-image-tag \
+  --env <dev|hom|prd> \
+  --tag <nova-tag> \
+  --branch <branch-git-destino> \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|-----------|
+| `--env` | ✅ | Ambiente alvo: `dev`, `hom` ou `prd` |
+| `--tag` | ✅ | Nova tag da imagem (ex: SHA do commit) |
+| `--branch` | ✅ | Branch Git de destino para o commit GitOps (ex: `develop`, `release/v1.0.0`, `master`) |
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+**Exemplos por ambiente:**
+
+```bash
+# dev → branch develop
+pash-pipe update-image-tag --env dev --tag abc1234 --branch develop
+
+# hom → branch release/v1.0.0
+pash-pipe update-image-tag --env hom --tag abc1234 --branch release/v1.0.0
+
+# prd → branch master
+pash-pipe update-image-tag --env prd --tag v1.0.0 --branch master
+```
+
 ## Variáveis de ambiente obrigatórias
 
 | Variável | Descrição |
