@@ -1,11 +1,11 @@
 import yaml
 from interfaces.adapters.repositories.i_pashfile_repository import IPashfileRepository
 from core.domain.models.pash_app_model import PashAppModel, HelmConfig, EnvironmentConfig
-from infra.tools.logger_tool import LoggerTool
+from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class PashfileRepository(IPashfileRepository):
-    def __init__(self, logger: LoggerTool):
+    def __init__(self, logger: ILoggerTool):
         self._logger = logger
 
     def load(self, path: str) -> PashAppModel:
