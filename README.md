@@ -24,6 +24,84 @@ pash-pipe sync-argocd        Dispara sync da Application no ArgoCD
 pash-pipe resolve-app-names  Resolve os nomes semânticos da aplicação por ambiente a partir do Pashfile
 ```
 
+### install
+
+```bash
+pash-pipe install \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa o comando definido em `spec.pipeline.installCommand` dentro do diretório `spec.pipeline.workdir`.
+
+### fmt
+
+```bash
+pash-pipe fmt \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa o comando definido em `spec.pipeline.fmtCommand` dentro do diretório `spec.pipeline.workdir`.
+
+### lint
+
+```bash
+pash-pipe lint \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa o comando definido em `spec.pipeline.lintCommand` dentro do diretório `spec.pipeline.workdir`.
+
+### test
+
+```bash
+pash-pipe test \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa o comando definido em `spec.pipeline.testCommand` dentro do diretório `spec.pipeline.workdir`. Se `testCommand` estiver vazio no `.pashfile`, o subcomando encerra sem erro.
+
+### cover
+
+```bash
+pash-pipe cover \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa o comando definido em `spec.pipeline.coverCommand` dentro do diretório `spec.pipeline.workdir`. Se `coverCommand` estiver vazio no `.pashfile`, o subcomando encerra sem erro.
+
+### validate
+
+```bash
+pash-pipe validate \
+  [--path <caminho-pashfile>]
+```
+
+| Opção | Obrigatório | Descrição |
+|-------|------------|----------|
+| `--path` | ❌ | Caminho para o `.pashfile` (default: `.pashfile`) |
+
+Executa a sequência completa de qualidade: `fmt` → `lint` → `test` → `cover`. Qualquer falha interrompe a sequência e retorna código de saída não-zero.
+
 ### update-image-tag
 
 ```bash
@@ -87,6 +165,66 @@ pash-pipe resolve-app-names --env hom --output text
   "hom": "doc-portal-platform-hom",
   "prd": "doc-portal-platform-prd"
 }
+```
+
+## Formato do .pashfile
+
+O `.pashfile` é um arquivo YAML que configura o pipeline de CD e de qualidade da aplicação. Abaixo estão todos os campos suportados em `spec.pipeline`.
+
+### Campos de `spec.pipeline`
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `runtime` | string | Runtime do projeto: `node`, `python`, `go`, `java` ou `dotnet` |
+| `workdir` | string | Diretório de trabalho para execução dos comandos (ex: `app/`) |
+| `installCommand` | string | Comando de instalação de dependências (ex: `npm install`) |
+| `fmtCommand` | string | Comando de formatação de código (ex: `npm run fmt`) |
+| `lintCommand` | string | Comando de análise estática (ex: `npm run lint`) |
+| `testCommand` | string | Comando de testes unitários — vazio desativa a etapa |
+| `coverCommand` | string | Comando de cobertura de testes — vazio desativa a etapa |
+| `buildCommand` | string | Comando de build do artefato (ex: `npm run build`) |
+| `lintConfig` | string | Caminho do arquivo de configuração do linter (ex: `app/eslint.config.mjs`) |
+| `coverConfig` | string | Caminho do arquivo de configuração de cobertura |
+| `ignorePatterns` | list | Padrões de arquivos a ignorar na análise de cobertura |
+| `coverageThreshold` | int | Cobertura mínima exigida em porcentagem — `0` desativa a verificação |
+
+### Exemplo completo de `.pashfile`
+
+```yaml
+apiVersion: platform.io/v1
+kind: PashApp
+metadata:
+  sigla: DOC
+  appName: portal-platform
+  repo: pash-doc/pash-doc-portal-platform
+spec:
+  provisioning:
+    namespaces: true
+    argocd: true
+  pipeline:
+    runtime: node
+    workdir: app/
+    installCommand: "npm install"
+    fmtCommand: "npm run fmt"
+    lintCommand: "npm run lint"
+    testCommand: "npm test"
+    coverCommand: "npm run cover"
+    buildCommand: "npm run build"
+    lintConfig: "app/eslint.config.mjs"
+    coverConfig: ""
+    ignorePatterns: []
+    coverageThreshold: 90
+    helm:
+      chartRepo: pash-inf/pash-inf-helm-charts
+      chartName: pash-stacks
+      chartVersion: "0.1.0"
+      environments:
+        dev:
+          valuesFile: "app/_environments/dev/values-dev.yaml"
+        hom:
+          valuesFile: "app/_environments/hom/values-hom.yaml"
+        prd:
+          valuesFile: "app/_environments/prd/values-prd.yaml"
 ```
 
 ## Convenção de nomes semânticos
