@@ -6,6 +6,12 @@ from interfaces.core.application.i_push_image_use_case import IPushImageUseCase
 from interfaces.core.application.i_update_image_tag_use_case import IUpdateImageTagUseCase
 from interfaces.core.application.i_sync_argocd_use_case import ISyncArgoCDUseCase
 from interfaces.core.application.i_resolve_app_names_use_case import IResolveAppNamesUseCase
+from interfaces.core.application.i_install_use_case import IInstallUseCase
+from interfaces.core.application.i_fmt_use_case import IFmtUseCase
+from interfaces.core.application.i_lint_use_case import ILintUseCase
+from interfaces.core.application.i_test_use_case import ITestUseCase
+from interfaces.core.application.i_cover_use_case import ICoverUseCase
+from interfaces.core.application.i_validate_use_case import IValidateUseCase
 from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
@@ -18,6 +24,12 @@ class CliInit:
         update_uc: IUpdateImageTagUseCase,
         sync_uc: ISyncArgoCDUseCase,
         resolve_uc: IResolveAppNamesUseCase,
+        install_uc: IInstallUseCase,
+        fmt_uc: IFmtUseCase,
+        lint_uc: ILintUseCase,
+        test_uc: ITestUseCase,
+        cover_uc: ICoverUseCase,
+        validate_uc: IValidateUseCase,
         logger: ILoggerTool,
     ):
         self._parse_uc = parse_uc
@@ -26,6 +38,12 @@ class CliInit:
         self._update_uc = update_uc
         self._sync_uc = sync_uc
         self._resolve_uc = resolve_uc
+        self._install_uc = install_uc
+        self._fmt_uc = fmt_uc
+        self._lint_uc = lint_uc
+        self._test_uc = test_uc
+        self._cover_uc = cover_uc
+        self._validate_uc = validate_uc
         self._logger = logger
 
     def run(self):
@@ -81,5 +99,41 @@ class CliInit:
             else:
                 for env_name, app_name in names.items():
                     click.echo(f"{env_name}={app_name}")
+
+        @cli.command("install")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def install(path):
+            app = self._parse_uc.execute(path)
+            self._install_uc.execute(app=app)
+
+        @cli.command("fmt")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def fmt(path):
+            app = self._parse_uc.execute(path)
+            self._fmt_uc.execute(app=app)
+
+        @cli.command("lint")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def lint(path):
+            app = self._parse_uc.execute(path)
+            self._lint_uc.execute(app=app)
+
+        @cli.command("test")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def test(path):
+            app = self._parse_uc.execute(path)
+            self._test_uc.execute(app=app)
+
+        @cli.command("cover")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def cover(path):
+            app = self._parse_uc.execute(path)
+            self._cover_uc.execute(app=app)
+
+        @cli.command("validate")
+        @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")
+        def validate(path):
+            app = self._parse_uc.execute(path)
+            self._validate_uc.execute(app=app)
 
         cli()

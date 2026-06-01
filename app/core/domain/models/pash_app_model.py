@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -16,6 +16,22 @@ class HelmConfig:
 
 
 @dataclass
+class QualityConfig:
+    runtime: str
+    workdir: str
+    install_command: Optional[str] = None
+    fmt_command: Optional[str] = None
+    lint_command: Optional[str] = None
+    test_command: Optional[str] = None
+    cover_command: Optional[str] = None
+    build_command: Optional[str] = None
+    lint_config: Optional[str] = None
+    cover_config: Optional[str] = None
+    ignore_patterns: List[str] = field(default_factory=list)
+    coverage_threshold: int = 90
+
+
+@dataclass
 class PashAppModel:
     sigla: str
     app_name: str
@@ -23,3 +39,4 @@ class PashAppModel:
     helm: HelmConfig
     type: Optional[str] = field(default=None)
     shortname: Optional[str] = field(default=None)
+    quality: Optional[QualityConfig] = field(default=None)

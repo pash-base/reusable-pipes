@@ -1,6 +1,6 @@
 import yaml
 from interfaces.adapters.repositories.i_pashfile_repository import IPashfileRepository
-from core.domain.models.pash_app_model import PashAppModel, HelmConfig, EnvironmentConfig
+from core.domain.models.pash_app_model import PashAppModel, HelmConfig, EnvironmentConfig, QualityConfig
 from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
@@ -14,7 +14,8 @@ class PashfileRepository(IPashfileRepository):
             data = yaml.safe_load(f)
 
         metadata = data["metadata"]
-        helm_data = data["spec"]["pipeline"]["helm"]
+        pipeline = data["spec"]["pipeline"]
+        helm_data = pipeline["helm"]
         envs = {env: EnvironmentConfig(values_file=cfg["valuesFile"]) for env, cfg in helm_data["environments"].items()}
         helm = HelmConfig(
             chart_repo=helm_data["chartRepo"],
@@ -28,6 +29,23 @@ class PashfileRepository(IPashfileRepository):
         repo_type = metadata.get("type") or (parts[2] if len(parts) >= 3 else None)
         shortname = metadata.get("shortname") or ("-".join(parts[3:]) if len(parts) >= 4 else None)
 
+        quality = None
+        if "runtime" in pipeline:
+            quality = QualityConfig(
+                runtime=pipeline["runtime"],
+                workdir=pipeline.get("workdir", "app/"),
+                install_command=pipeline.get("installCommand") or None,
+                fmt_command=pipeline.get("fmtCommand") or None,
+                lint_command=pipeline.get("lintCommand") or None,
+                test_command=pipeline.get("testCommand") or None,
+                cover_command=pipeline.get("coverCommand") or None,
+                build_command=pipeline.get("buildCommand") or None,
+                lint_config=pipeline.get("lintConfig") or None,
+                cover_config=pipeline.get("coverConfig") or None,
+                ignore_patterns=pipeline.get("ignorePatterns") or [],
+                coverage_threshold=pipeline.get("coverageThreshold", 90),
+            )
+
         return PashAppModel(
             sigla=metadata["sigla"],
             app_name=metadata["appName"],
@@ -35,4 +53,5 @@ class PashfileRepository(IPashfileRepository):
             helm=helm,
             type=repo_type,
             shortname=shortname,
+            quality=quality,
         )

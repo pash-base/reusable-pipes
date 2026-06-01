@@ -165,3 +165,84 @@ def test_should_use_explicit_shortname_when_shortname_is_in_metadata(mocker):
     assert result.shortname == "override"
     mock_logger.info.assert_called_once_with(f"Lendo .pashfile em: {path}")
     os.unlink(path)
+
+
+_PASHFILE_WITH_QUALITY = {
+    "apiVersion": "platform.io/v1",
+    "kind": "PashApp",
+    "metadata": {
+        "sigla": "DOC",
+        "appName": "portal-platform",
+        "repo": "pash-doc/pash-doc-portal-platform",
+    },
+    "spec": {
+        "pipeline": {
+            "runtime": "node",
+            "workdir": "app/",
+            "installCommand": "npm install",
+            "fmtCommand": "npm run fmt",
+            "lintCommand": "npm run lint",
+            "testCommand": "",
+            "coverCommand": "",
+            "buildCommand": "npm run build",
+            "lintConfig": "app/eslint.config.mjs",
+            "coverConfig": "",
+            "ignorePatterns": [],
+            "coverageThreshold": 0,
+            "helm": {
+                "chartRepo": "pash-inf/pash-inf-helm-charts",
+                "chartName": "pash-stacks",
+                "chartVersion": "0.1.0",
+                "environments": {
+                    "dev": {"valuesFile": "app/_environments/dev/values-dev.yaml"},
+                },
+            },
+        }
+    },
+}
+
+
+def test_should_return_quality_config_when_pashfile_has_runtime(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(_PASHFILE_WITH_QUALITY, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.quality is not None
+    assert result.quality.runtime == "node"
+    assert result.quality.workdir == "app/"
+    assert result.quality.install_command == "npm install"
+    assert result.quality.fmt_command == "npm run fmt"
+    assert result.quality.lint_command == "npm run lint"
+    assert result.quality.test_command is None
+    assert result.quality.cover_command is None
+    assert result.quality.build_command == "npm run build"
+    assert result.quality.lint_config == "app/eslint.config.mjs"
+    assert result.quality.cover_config is None
+    assert result.quality.ignore_patterns == []
+    assert result.quality.coverage_threshold == 0
+    os.unlink(path)
+
+
+def test_should_return_quality_none_when_pashfile_has_no_runtime(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(_VALID_PASHFILE, f)
+        path = f.name
+
+    repo = PashfileRepository(logger=mock_logger)
+
+    # Act
+    result = repo.load(path)
+
+    # Assert
+    assert result.quality is None
+    os.unlink(path)

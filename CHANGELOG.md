@@ -14,6 +14,17 @@ seguindo [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **`ResolveAppNamesUseCase`**: novo use case que resolve os nomes semânticos de uma aplicação por ambiente, seguindo o padrão `<sigla_lower>-<type>-<shortname>-<env>`.
 - **`PashAppModel`**: novos campos `type` e `shortname`, derivados automaticamente de `metadata.repo` no Pashfile (padrão `pash-<SIGLA>-<type>-<shortname>`).
 - **CLI `resolve-app-names`**: novo subcomando com suporte às flags `--path`, `--env` e `--output` (`json` ou `text`).
+- **`QualityConfig`**: novo dataclass no modelo de domínio com 12 campos de configuração de qualidade (`runtime`, `workdir`, `installCommand`, `fmtCommand`, `lintCommand`, `testCommand`, `coverCommand`, `buildCommand`, `lintConfig`, `coverConfig`, `ignorePatterns`, `coverageThreshold`).
+- **6 novos use cases de qualidade**: `InstallUseCase`, `FmtUseCase`, `LintUseCase`, `TestUseCase`, `CoverUseCase`, `ValidateUseCase` — todos leem configuração do `.pashfile` via `QualityConfig`.
+- **6 novos subcomandos CLI**: `install`, `fmt`, `lint`, `test`, `cover`, `validate` — todos aceitam a flag `--path` e delegam execução ao use case correspondente.
+- **Suporte a `spec.pipeline.runtime` no `.pashfile`**: bloco completo de configuração de qualidade com os campos do `QualityConfig` disponíveis para declarar comandos, configs de linter/cobertura, padrões de ignore e threshold de cobertura.
+
+### Corrigido
+
+- **`develop-cd.yml`**: corrigido path relativo inválido na instalação do `pash-pipe` (era `../reusable-pipes/app`; agora usa `git clone` do repositório).
+- **`develop-cd.yml`**: adicionado parâmetro `--branch develop` obrigatório na chamada de `update-image-tag`.
+- **`develop-cd.yml`**: substituído `--app-name portal-platform-dev` hardcoded por chamada dinâmica ao `resolve-app-names`.
+- **4 workflows reutilizáveis**: substituídos steps simulados (`echo`/`sleep`) por chamadas reais ao `pash-pipe`.
 
 ---
 
