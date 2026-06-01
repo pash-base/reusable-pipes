@@ -7,11 +7,9 @@ permissions:
   contents: write
   pull-requests: write
   statuses: write
+  packages: write
 
 jobs:
-  # ─────────────────────────────────────────────
-  # 0. Verifica se as Histórias foram preenchidas
-  # ─────────────────────────────────────────────
   check-story-id:
     name: 🎫 Check Story ID
     runs-on: [self-hosted, linux, homelab]
@@ -36,216 +34,112 @@ jobs:
             echo "✅ História(s) identificada(s): **\`${STORY_ID}\`**" >> $GITHUB_STEP_SUMMARY
           fi
 
-  # ─────────────────────────────────────────────
-  # 1. Análise de qualidade de código
-  # ─────────────────────────────────────────────
-  quality:
-    name: 🔍 Code Quality
+  validate:
+    name: 🧪 Validate
     runs-on: [self-hosted, linux, homelab]
     needs: check-story-id
     if: needs.check-story-id.outputs.has_story_id == 'true'
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lint & Static Analysis
+      - name: Instalar pash-pipe
         run: |
-          echo "🔍 Analisando qualidade do código (produção)..."
-          sleep 1
-          echo "## 🔍 Code Quality" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Lint | ✅ 0 erros |" >> $GITHUB_STEP_SUMMARY
-          echo "| Complexidade ciclomática | ✅ OK |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code smells | ✅ 0 encontrados |" >> $GITHUB_STEP_SUMMARY
-          echo "| Vulnerabilidades | ✅ 0 críticas |" >> $GITHUB_STEP_SUMMARY
-
-  # ─────────────────────────────────────────────
-  # 2. Testes unitários
-  # ─────────────────────────────────────────────
-  unit-tests:
-    name: 🧪 Unit Tests
-    runs-on: [self-hosted, linux, homelab]
-    needs: [check-story-id, quality]
-    if: needs.check-story-id.outputs.has_story_id == 'true'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Unit Tests
-        run: |
-          echo "🧪 Executando testes unitários..."
-          sleep 2
-          echo "## 🧪 Unit Tests" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests passed | ✅ 42 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests failed | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Skipped | ✅ 0 |" >> $GITHUB_STEP_SUMMARY
-
-  # ─────────────────────────────────────────────
-  # 3. Fluxo de aprovação
-  # ─────────────────────────────────────────────
-  approval:
-    name: ✅ Approval Flow
-    runs-on: [self-hosted, linux, homelab]
-    needs: [check-story-id, unit-tests]
-    if: needs.check-story-id.outputs.has_story_id == 'true'
-    steps:
-      - name: Run approval flow
+          rm -rf /tmp/reusable-pipes
+          git clone --branch master https://x-access-token:${{ secrets.PASH_PAT }}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
+          pip install -e /tmp/reusable-pipes/app --quiet
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
         env:
-          STORY_ID: ${{ needs.check-story-id.outputs.story_id }}
-        run: |
-          echo "✅ Verificando aprovações para história: $STORY_ID..."
-          sleep 1 && echo "  ✔ Aprovação do dev: OK"
-          sleep 1 && echo "  ✔ Aprovação do QA: OK"
-          sleep 1 && echo "  ✔ Aprovação do PO: OK"
-          echo "## ✅ Approval Flow" >> $GITHUB_STEP_SUMMARY
-          echo "| Aprovador | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Dev | ✅ Aprovado |" >> $GITHUB_STEP_SUMMARY
-          echo "| QA | ✅ Aprovado |" >> $GITHUB_STEP_SUMMARY
-          echo "| Product Owner | ✅ Aprovado |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎫 História: **\`$STORY_ID\`** aprovada para produção." >> $GITHUB_STEP_SUMMARY
+          PASH_PAT: ${{ secrets.PASH_PAT }}
 
-  # ─────────────────────────────────────────────
-  # 4. Deploy em produção
-  # ─────────────────────────────────────────────
+      - name: Validate (install + fmt + lint + test + cover)
+        run: pash-pipe validate --path app/.pashfile
+
   deploy-prod:
     name: 🚀 Deploy → Production
     runs-on: [self-hosted, linux, homelab]
-    needs: [check-story-id, approval]
+    needs: [check-story-id, validate]
     if: needs.check-story-id.outputs.has_story_id == 'true'
+    permissions:
+      contents: write
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Production
-        env:
-          STORY_ID: ${{ needs.check-story-id.outputs.story_id }}
+      - name: Instalar pash-pipe
         run: |
-          echo "🚀 Iniciando deploy em PRODUÇÃO (história: $STORY_ID)..."
-          sleep 1 && echo "  ✔ Build final: OK"
-          sleep 1 && echo "  ✔ Docker push (prod registry): OK"
-          sleep 1 && echo "  ✔ Canary release (10%): OK"
-          sleep 1 && echo "  ✔ Canary health check: OK"
-          sleep 1 && echo "  ✔ Full rollout (100%): OK"
-          sleep 1 && echo "  ✔ Post-deploy smoke tests: OK"
-          echo "## 🚀 Deploy — Production" >> $GITHUB_STEP_SUMMARY
-          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Build | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker push | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Canary (10%) | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Full rollout | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| Smoke tests | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| URL | https://prod.homelab.local |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 **Deploy em produção concluído com sucesso!** História: \`$STORY_ID\`" >> $GITHUB_STEP_SUMMARY
+          rm -rf /tmp/reusable-pipes
+          git clone --branch master https://x-access-token:${{ secrets.PASH_PAT }}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
+          pip install -e /tmp/reusable-pipes/app --quiet
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        env:
+          PASH_PAT: ${{ secrets.PASH_PAT }}
 
-  # ─────────────────────────────────────────────
-  # 5. Cria tag e GitHub Release após deploy
-  # ─────────────────────────────────────────────
-  create-release:
-    name: 🏷️ Create Tag & Release
+      - name: Configurar identidade git
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Login no GHCR
+        run: |
+          mkdir -p ~/.docker
+          echo '{"credsStore":""}' > ~/.docker/config.json
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build imagem
+        run: pash-pipe build --tag ${{ github.sha }} --path app/.pashfile
+        env:
+          REGISTRY: ghcr.io
+
+      - name: Push imagem
+        run: pash-pipe push --tag ${{ github.sha }} --path app/.pashfile
+        env:
+          REGISTRY: ghcr.io
+
+      - name: Atualizar image tag (prd)
+        run: pash-pipe update-image-tag --env prd --tag ${{ github.sha }} --path app/.pashfile --branch ${{ github.head_ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolver nome da app ArgoCD (prd)
+        id: resolve
+        run: |
+          APP_NAME=$(pash-pipe resolve-app-names --path app/.pashfile --env prd --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['prd'])")
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Sync ArgoCD (prd)
+        run: pash-pipe sync-argocd --app-name ${{ steps.resolve.outputs.app_name }}
+        env:
+          ARGOCD_URL: ${{ secrets.ARGOCD_URL }}
+          ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+          ARGOCD_INSECURE: "true"
+
+  create-release-tag:
+    name: 🏷️ Create GitHub Release
     runs-on: [self-hosted, linux, homelab]
     needs: [check-story-id, deploy-prod]
     if: needs.check-story-id.outputs.has_story_id == 'true'
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      STORY_ID: ${{ needs.check-story-id.outputs.story_id }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Create Git Tag & GitHub Release
-        env:
-          STORY_ID: ${{ needs.check-story-id.outputs.story_id }}
-          HEAD_REF: ${{ github.head_ref }}
+      - name: Criar tag e GitHub Release
         run: |
-          VERSION="${HEAD_REF#release/v}"
+          VERSION="${GITHUB_HEAD_REF#release/v}"
           TAG="v${VERSION}"
-
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-
-          if ! git ls-remote --tags origin "refs/tags/$TAG" | grep -q "$TAG"; then
-            git tag "$TAG"
-            git push origin "$TAG"
-            echo "✅ Tag \`$TAG\` criada" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "ℹ️ Tag \`$TAG\` já existe" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          {
-            printf "## 🚀 Release %s\n\n" "$TAG"
-            printf "🎫 História(s): %s\n\n" "$STORY_ID"
-            printf "### Pipeline\n\n"
-            printf "| Stage | Status |\n|---|---|\n"
-            printf "| Code Quality | ✅ |\n"
-            printf "| Unit Tests | ✅ |\n"
-            printf '%s\n' "| Coverage ≥ 90% | ✅ |"
-            printf "| Deploy Homolog | ✅ |\n"
-            printf "| Approval | ✅ |\n"
-            printf "| Deploy Production | ✅ |\n"
-          } > /tmp/release-notes.md
-
+          git tag "$TAG" || true
+          git push origin "$TAG" || true
           gh release create "$TAG" \
-            --title "Release ${TAG}" \
-            --notes-file /tmp/release-notes.md \
-            --latest || echo "ℹ️ Release $TAG já existe."
+            --title "Release $TAG" \
+            --notes "Deploy de produção — histórias: $STORY_ID" \
+            --latest || true
 
-          echo "## 🏷️ Tag & Release" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tag:** \`$TAG\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Release:** https://github.com/${{ github.repository }}/releases/tag/$TAG" >> $GITHUB_STEP_SUMMARY
-
-  # ─────────────────────────────────────────────
-  # Gate final — bloqueia merge se pipeline não passou
-  # ─────────────────────────────────────────────
-  pipeline-gate:
-    name: 🔒 Pipeline Gate
-    runs-on: [self-hosted, linux, homelab]
-    needs: [check-story-id, quality, unit-tests, approval, deploy-prod, create-release]
-    if: always()
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: Evaluate pipeline result
-        env:
-          HAS_STORY: ${{ needs.check-story-id.outputs.has_story_id }}
-          QUALITY: ${{ needs.quality.result }}
-          TESTS: ${{ needs.unit-tests.result }}
-          APPROVAL: ${{ needs.approval.result }}
-          DEPLOY: ${{ needs.deploy-prod.result }}
-          RELEASE: ${{ needs.create-release.result }}
-          STORY_ID: ${{ needs.check-story-id.outputs.story_id }}
+      - name: Converter PR para ready (remover draft)
         run: |
-          echo "## 🔒 Pipeline Gate" >> $GITHUB_STEP_SUMMARY
-
-          if [ "$HAS_STORY" != "true" ]; then
-            echo "❌ **Merge bloqueado:** História(s) não definida(s) na PR." >> $GITHUB_STEP_SUMMARY
-            echo "Edite a PR e substitua os placeholders em \`História(s):\` pelos IDs reais." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-
-          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Quality | $QUALITY |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | $TESTS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Approval | $APPROVAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Deploy Prod | $DEPLOY |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tag & Release | $RELEASE |" >> $GITHUB_STEP_SUMMARY
-
-          if [ "$QUALITY" = "success" ] && \
-             [ "$TESTS" = "success" ] && \
-             [ "$APPROVAL" = "success" ] && \
-             [ "$DEPLOY" = "success" ] && \
-             [ "$RELEASE" = "success" ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "✅ **Pipeline concluído. Convertendo PR para pronta para merge...**" >> $GITHUB_STEP_SUMMARY
-            echo "🎫 História: \`$STORY_ID\`" >> $GITHUB_STEP_SUMMARY
-            gh pr ready "${{ github.event.pull_request.number }}"
-            echo "✅ **PR liberada para merge em \`master\`.**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "❌ **Pipeline falhou. Merge bloqueado.**" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          gh pr ready "$PR_NUMBER" || true
