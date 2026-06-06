@@ -5,6 +5,8 @@ from interfaces.infra.tools.i_logger_tool import ILoggerTool
 
 
 class TestUseCase(ITestUseCase):
+    __test__ = False  # tells pytest this is not a test class
+
     def __init__(self, logger: ILoggerTool):
         self._logger = logger
 
