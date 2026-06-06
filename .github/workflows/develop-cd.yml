@@ -85,7 +85,6 @@ jobs:
         id: resolve
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           APP_NAME=$(pash-pipe resolve-app-names --path app/.pashfile --env dev --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['dev'])")
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
