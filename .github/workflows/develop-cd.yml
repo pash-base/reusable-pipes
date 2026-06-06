@@ -2,6 +2,13 @@ name: Reusable — Develop CD
 
 on:
   workflow_call:
+    secrets:
+      PASH_PAT:
+        required: true
+      ARGOCD_URL:
+        required: true
+      ARGOCD_TOKEN:
+        required: true
 
 permissions:
   contents: write
