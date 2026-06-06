@@ -42,6 +42,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pash-pipe
+        uses: actions/checkout@v4
+        with:
+          repository: pash-base/reusable-pipes
+          path: /tmp/reusable-pipes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pash-pipe
+        run: pip install -e /tmp/reusable-pipes/app --quiet
+
       - name: Validate (install + fmt + lint + test + cover)
         run: pash-pipe validate --path app/.pashfile
 
@@ -55,6 +65,16 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install pash-pipe
+        uses: actions/checkout@v4
+        with:
+          repository: pash-base/reusable-pipes
+          path: /tmp/reusable-pipes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pash-pipe
+        run: pip install -e /tmp/reusable-pipes/app --quiet
 
       - name: Configurar identidade git
         run: |
