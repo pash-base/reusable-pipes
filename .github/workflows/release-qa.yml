@@ -2,13 +2,6 @@ name: Reusable — Release QA
 
 on:
   workflow_call:
-    secrets:
-      PASH_PAT:
-        required: true
-      ARGOCD_URL:
-        required: true
-      ARGOCD_TOKEN:
-        required: true
 
 permissions:
   contents: write
@@ -23,15 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalar pash-pipe
-        run: |
-          rm -rf /tmp/reusable-pipes
-          git clone --branch master https://x-access-token:${{ secrets.PASH_PAT }}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
-          pip install -e /tmp/reusable-pipes/app --quiet
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-        env:
-          PASH_PAT: ${{ secrets.PASH_PAT }}
-
       - name: Validate (install + fmt + lint + test + cover)
         run: pash-pipe validate --path app/.pashfile
 
@@ -45,15 +29,6 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Instalar pash-pipe
-        run: |
-          rm -rf /tmp/reusable-pipes
-          git clone --branch master https://x-access-token:${{ secrets.PASH_PAT }}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
-          pip install -e /tmp/reusable-pipes/app --quiet
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-        env:
-          PASH_PAT: ${{ secrets.PASH_PAT }}
 
       - name: Configurar identidade git
         run: |
@@ -90,8 +65,6 @@ jobs:
       - name: Sync ArgoCD (hom)
         run: pash-pipe sync-argocd --app-name ${{ steps.resolve.outputs.app_name }}
         env:
-          ARGOCD_URL: ${{ secrets.ARGOCD_URL }}
-          ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
           ARGOCD_INSECURE: "true"
 
   open-master-pr:

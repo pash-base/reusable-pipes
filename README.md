@@ -1,6 +1,6 @@
 # reusable-pipes
 
-CLI `pash-pipe` — pipelines de CD reutilizáveis da plataforma Path Shards.
+CLI `pash-pipe` — pipelines de CD reutilizáveis da plataforma Path Shards Platform.
 
 ## Sobre
 

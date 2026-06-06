@@ -2,9 +2,6 @@ name: Reusable — Feature CI
 
 on:
   workflow_call:
-    secrets:
-      PASH_PAT:
-        required: true
 
 permissions:
   contents: read
@@ -16,15 +13,6 @@ jobs:
     runs-on: [self-hosted, linux, homelab]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Instalar pash-pipe
-        run: |
-          rm -rf /tmp/reusable-pipes
-          git clone --branch master https://x-access-token:${{ secrets.PASH_PAT }}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
-          pip install -e /tmp/reusable-pipes/app --quiet
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-        env:
-          PASH_PAT: ${{ secrets.PASH_PAT }}
 
       - name: Install dependencies
         run: pash-pipe install --path app/.pashfile
