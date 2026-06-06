@@ -22,6 +22,7 @@ jobs:
           pip install -e /tmp/reusable-pipes/app --quiet
           echo "$HOME/.asdf/shims" >> $GITHUB_PATH
           asdf reshim python 2>/dev/null || true
+          echo "PYTHONPATH=/tmp/reusable-pipes/app:$PYTHONPATH" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: pash-pipe install --path app/.pashfile
