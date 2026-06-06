@@ -104,18 +104,7 @@ jobs:
           git clone --depth 1 https://x-access-token:${GH_TOKEN}@github.com/pash-base/platform-config.git /tmp/platform-config
           git -C /tmp/platform-config config user.email "github-actions[bot]@users.noreply.github.com"
           git -C /tmp/platform-config config user.name "github-actions[bot]"
-          python3 -c "
-import yaml
-path = f'/tmp/platform-config/{CONFIG_FILE}'
-with open(path) as f:
-    data = yaml.safe_load(f)
-for s in data['spec']['sources']:
-    if 'ref' in s and s['ref'] == 'values':
-        s['targetRevision'] = '${BRANCH}'
-with open(path, 'w') as f:
-    yaml.dump(data, f, default_flow_style=False)
-print(f'  targetRevision atualizado para ${BRANCH}')
-"
+          python3 -c "import yaml; p=f'/tmp/platform-config/{CONFIG_FILE}'; d=yaml.safe_load(open(p)); [s.update({'targetRevision': '${BRANCH}'}) for s in d['spec']['sources'] if s.get('ref')=='values']; yaml.dump(d, open(p,'w'), default_flow_style=False); print(f'targetRevision atualizado para ${BRANCH}')"
           git -C /tmp/platform-config add -A
           git -C /tmp/platform-config commit -m "chore(gitops): update ${APP_NAME} targetRevision → ${BRANCH}"
           git -C /tmp/platform-config push
