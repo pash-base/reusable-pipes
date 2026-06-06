@@ -20,6 +20,7 @@ jobs:
           rm -rf /tmp/reusable-pipes
           git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
           pip install -e /tmp/reusable-pipes/app --quiet
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Validate (install + fmt + lint + test + cover)
         run: pash-pipe validate --path app/.pashfile
@@ -40,6 +41,7 @@ jobs:
           rm -rf /tmp/reusable-pipes
           git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
           pip install -e /tmp/reusable-pipes/app --quiet
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Configurar identidade git
         run: |
