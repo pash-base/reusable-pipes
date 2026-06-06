@@ -48,7 +48,8 @@ jobs:
           rm -rf /tmp/reusable-pipes
           git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
           pip install -e /tmp/reusable-pipes/app --quiet
-          echo "$(python3 -c "import site; print(site.USER_BASE)" 2>/dev/null || echo "$HOME/.local")/bin" >> $GITHUB_PATH
+                    echo "$HOME/.asdf/shims" >> $GITHUB_PATH
+          asdf reshim python 2>/dev/null || true
 
       - name: Validate (install + fmt + lint + test + cover)
         run: pash-pipe validate --path app/.pashfile
@@ -70,7 +71,8 @@ jobs:
           rm -rf /tmp/reusable-pipes
           git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
           pip install -e /tmp/reusable-pipes/app --quiet
-          echo "$(python3 -c "import site; print(site.USER_BASE)" 2>/dev/null || echo "$HOME/.local")/bin" >> $GITHUB_PATH
+                    echo "$HOME/.asdf/shims" >> $GITHUB_PATH
+          asdf reshim python 2>/dev/null || true
 
       - name: Configurar identidade git
         run: |
