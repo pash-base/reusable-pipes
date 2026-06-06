@@ -1,0 +1,8 @@
+name: Test Develop CD
+on:
+  push:
+    branches:
+      - 'master'
+jobs:
+  test:
+    uses: ./.github/workflows/develop-cd.yml
