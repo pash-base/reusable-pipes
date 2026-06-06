@@ -11,7 +11,9 @@ def test_should_post_to_argocd_sync_endpoint_when_sync_is_called(mocker):
     mock_logger = mocker.MagicMock()
     client = ArgocdClient(config=mock_config, logger=mock_logger)
     mock_requests = mocker.patch.object(argocd_module, "requests")
-    mock_requests.post.return_value.raise_for_status.return_value = None
+    mock_response = mocker.MagicMock()
+    mock_response.status_code = 503
+    mock_requests.post.return_value = mock_response
 
     # Act
     client.sync("portal-platform-dev")
@@ -24,7 +26,7 @@ def test_should_post_to_argocd_sync_endpoint_when_sync_is_called(mocker):
         verify=True,
         timeout=30,
     )
-    mock_requests.post.return_value.raise_for_status.assert_called_once()
+    mock_response.raise_for_status.assert_called_once()
     mock_logger.info.assert_called_once_with("Sincronizando ArgoCD app: portal-platform-dev")
 
 
@@ -37,7 +39,9 @@ def test_should_skip_tls_verification_when_argocd_insecure_is_true(mocker):
     mock_logger = mocker.MagicMock()
     client = ArgocdClient(config=mock_config, logger=mock_logger)
     mock_requests = mocker.patch.object(argocd_module, "requests")
-    mock_requests.post.return_value.raise_for_status.return_value = None
+    mock_response = mocker.MagicMock()
+    mock_response.status_code = 503
+    mock_requests.post.return_value = mock_response
 
     # Act
     client.sync("my-app")
@@ -50,5 +54,27 @@ def test_should_skip_tls_verification_when_argocd_insecure_is_true(mocker):
         verify=False,
         timeout=30,
     )
-    mock_requests.post.return_value.raise_for_status.assert_called_once()
+    mock_response.raise_for_status.assert_called_once()
     mock_logger.info.assert_called_once_with("Sincronizando ArgoCD app: my-app")
+
+
+def test_should_warn_when_argocd_returns_400_on_sync(mocker):
+    # Arrange
+    mock_config = mocker.MagicMock()
+    mock_config.argocd_url = "https://argocd.local"
+    mock_config.argocd_token = "test-token"
+    mock_config.argocd_insecure = False
+    mock_logger = mocker.MagicMock()
+    client = ArgocdClient(config=mock_config, logger=mock_logger)
+    mock_requests = mocker.patch.object(argocd_module, "requests")
+    mock_response = mocker.MagicMock()
+    mock_response.status_code = 400
+    mock_response.text = '{"error":"already syncing"}'
+    mock_requests.post.return_value = mock_response
+
+    # Act
+    client.sync("portal-platform-dev")
+
+    # Assert
+    mock_response.raise_for_status.assert_not_called()
+    mock_logger.warning.assert_called_once()

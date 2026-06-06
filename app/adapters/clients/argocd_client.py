@@ -15,4 +15,7 @@ class ArgocdClient(IArgocdClient):
         verify_tls = not self._config.argocd_insecure
         self._logger.info(f"Sincronizando ArgoCD app: {app_name}")
         response = requests.post(url, headers=headers, json={}, verify=verify_tls, timeout=30)
-        response.raise_for_status()
+        if response.status_code >= 500:
+            response.raise_for_status()
+        elif response.status_code >= 400:
+            self._logger.warning(f"ArgoCD sync retornou {response.status_code}: {response.text[:200]}")
