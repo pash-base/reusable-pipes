@@ -47,6 +47,7 @@ jobs:
 
       - name: Create PR to develop (if not exists)
         run: |
+          source ~/.zshrc 2>/dev/null || true
           BRANCH="${GITHUB_REF_NAME}"
           FEATURE_NAME="${BRANCH#feature/}"
           EXISTING=$(gh pr list --head "$BRANCH" --base develop --json number --jq 'length')
