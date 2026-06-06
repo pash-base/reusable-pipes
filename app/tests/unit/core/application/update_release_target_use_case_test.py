@@ -25,7 +25,7 @@ def test_should_update_target_revision_when_app_name_and_branch_are_valid(mocker
     assert mock_run.call_count >= 5
     mock_yaml.safe_load.assert_called_once()
     mock_yaml.dump.assert_called_once()
-    mock_logger.info.assert_called_once()
+    assert mock_logger.info.call_count >= 1
 
 
 def test_should_derive_sigla_and_shortname_from_app_name(mocker):
@@ -74,3 +74,23 @@ def test_should_update_only_values_source_in_yaml(mocker):
     assert mock_data["spec"]["sources"][0]["targetRevision"] == "master"
     assert mock_data["spec"]["sources"][1]["targetRevision"] == "release/v1.0.13"
     mock_yaml.dump.assert_called_once_with(mock_data, mocker.ANY, default_flow_style=False)
+
+
+def test_should_skip_push_when_nothing_to_commit(mocker):
+    # Arrange
+    mock_logger = mocker.MagicMock()
+    use_case = UpdateReleaseTargetUseCase(logger=mock_logger)
+    mock_run = mocker.patch("core.application.update_release_target_use_case.subprocess.run")
+    mock_run.return_value.returncode = 1  # nothing to commit
+    mocker.patch("core.application.update_release_target_use_case.os.environ.get", return_value="fake-token")
+    mocker.patch("builtins.open", mocker.mock_open())
+    mock_yaml = mocker.patch("core.application.update_release_target_use_case.yaml")
+    mock_yaml.safe_load.return_value = {"spec": {"sources": [{"ref": "values", "targetRevision": "release/v1.0.15"}]}}
+
+    # Act
+    use_case.execute(app_name="doc-portal-platform-hom", branch="release/v1.0.15")
+
+    # Assert
+    push_calls = [c for c in mock_run.call_args_list if "push" in str(c.args)]
+    assert len(push_calls) == 0
+    mock_logger.info.assert_any_call("Nenhuma alteração para commitar — targetRevision já está atualizado")

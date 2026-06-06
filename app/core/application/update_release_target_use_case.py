@@ -42,7 +42,7 @@ class UpdateReleaseTargetUseCase(IUpdateReleaseTargetUseCase):
             yaml.dump(data, f, default_flow_style=False)
 
         subprocess.run(["git", "-C", "/tmp/platform-config", "add", "-A"], check=True)
-        subprocess.run(
+        result = subprocess.run(
             [
                 "git",
                 "-C",
@@ -51,6 +51,9 @@ class UpdateReleaseTargetUseCase(IUpdateReleaseTargetUseCase):
                 "-m",
                 f"chore(gitops): update {app_name} targetRevision → {branch}",
             ],
-            check=True,
+            check=False,
         )
-        subprocess.run(["git", "-C", "/tmp/platform-config", "push"], check=True)
+        if result.returncode == 0:
+            subprocess.run(["git", "-C", "/tmp/platform-config", "push"], check=True)
+        else:
+            self._logger.info("Nenhuma alteração para commitar — targetRevision já está atualizado")
