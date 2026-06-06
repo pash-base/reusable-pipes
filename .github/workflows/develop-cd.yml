@@ -15,14 +15,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install pash-pipe
-        uses: actions/checkout@v4
-        with:
-          repository: pash-base/reusable-pipes
-          path: /tmp/reusable-pipes
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install pash-pipe
-        run: pip install -e /tmp/reusable-pipes/app --quiet
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          rm -rf /tmp/reusable-pipes
+          git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
+          pip install -e /tmp/reusable-pipes/app --quiet
 
       - name: Validate (install + fmt + lint + test + cover)
         run: pash-pipe validate --path app/.pashfile
@@ -38,14 +35,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install pash-pipe
-        uses: actions/checkout@v4
-        with:
-          repository: pash-base/reusable-pipes
-          path: /tmp/reusable-pipes
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install pash-pipe
-        run: pip install -e /tmp/reusable-pipes/app --quiet
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          rm -rf /tmp/reusable-pipes
+          git clone --branch master https://x-access-token:${GH_TOKEN}@github.com/pash-base/reusable-pipes.git /tmp/reusable-pipes
+          pip install -e /tmp/reusable-pipes/app --quiet
 
       - name: Configurar identidade git
         run: |
