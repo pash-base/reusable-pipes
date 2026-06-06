@@ -6,6 +6,7 @@ from interfaces.core.application.i_push_image_use_case import IPushImageUseCase
 from interfaces.core.application.i_update_image_tag_use_case import IUpdateImageTagUseCase
 from interfaces.core.application.i_sync_argocd_use_case import ISyncArgoCDUseCase
 from interfaces.core.application.i_resolve_app_names_use_case import IResolveAppNamesUseCase
+from interfaces.core.application.i_update_release_target_use_case import IUpdateReleaseTargetUseCase
 from interfaces.core.application.i_install_use_case import IInstallUseCase
 from interfaces.core.application.i_fmt_use_case import IFmtUseCase
 from interfaces.core.application.i_lint_use_case import ILintUseCase
@@ -30,6 +31,7 @@ class CliInit:
         test_uc: ITestUseCase,
         cover_uc: ICoverUseCase,
         validate_uc: IValidateUseCase,
+        update_release_target_uc: IUpdateReleaseTargetUseCase,
         logger: ILoggerTool,
     ):
         self._parse_uc = parse_uc
@@ -44,6 +46,7 @@ class CliInit:
         self._test_uc = test_uc
         self._cover_uc = cover_uc
         self._validate_uc = validate_uc
+        self._update_release_target_uc = update_release_target_uc
         self._logger = logger
 
     def run(self):
@@ -84,6 +87,12 @@ class CliInit:
         @click.option("--app-name", required=True, help="Nome da Application ArgoCD")
         def sync_argocd(app_name):
             self._sync_uc.execute(app_name=app_name)
+
+        @cli.command("update-release-target")
+        @click.option("--app-name", required=True, help="Nome da Application ArgoCD (ex: doc-portal-platform-hom)")
+        @click.option("--branch", required=True, help="Nova targetRevision (ex: release/v1.0.13)")
+        def update_release_target(app_name, branch):
+            self._update_release_target_uc.execute(app_name=app_name, branch=branch)
 
         @cli.command("resolve-app-names")
         @click.option("--path", default=".pashfile", help="Caminho para o .pashfile")

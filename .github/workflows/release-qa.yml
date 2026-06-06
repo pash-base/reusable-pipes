@@ -94,22 +94,9 @@ jobs:
       - name: Atualizar targetRevision via GitOps (platform-config)
         run: |
           source ~/.zshrc 2>/dev/null || true
-          BRANCH="${{ github.base_ref }}"
-          APP_NAME=${{ steps.resolve.outputs.app_name }}
-          SIGLA=$(echo "${APP_NAME}" | cut -d- -f1)
-          SHORTNAME=$(echo "${APP_NAME}" | cut -d- -f2,3)
-          CONFIG_FILE="argocd/applications/${SIGLA}/${SHORTNAME}/${APP_NAME}.yaml"
-          echo "Atualizando ${APP_NAME} targetRevision → ${BRANCH} via GitOps"
-          rm -rf /tmp/platform-config
-          git clone --depth 1 https://x-access-token:${GH_TOKEN}@github.com/pash-base/platform-config.git /tmp/platform-config
-          git -C /tmp/platform-config config user.email "github-actions[bot]@users.noreply.github.com"
-          git -C /tmp/platform-config config user.name "github-actions[bot]"
-          python3 -c "import yaml; p=f'/tmp/platform-config/{CONFIG_FILE}'; d=yaml.safe_load(open(p)); [s.update({'targetRevision': '${BRANCH}'}) for s in d['spec']['sources'] if s.get('ref')=='values']; yaml.dump(d, open(p,'w'), default_flow_style=False); print(f'targetRevision atualizado para ${BRANCH}')"
-          git -C /tmp/platform-config add -A
-          git -C /tmp/platform-config commit -m "chore(gitops): update ${APP_NAME} targetRevision → ${BRANCH}"
-          git -C /tmp/platform-config push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pash-pipe update-release-target \
+            --app-name ${{ steps.resolve.outputs.app_name }} \
+            --branch ${{ github.base_ref }}
 
       - name: Sincronizar app-of-apps (propagar targetRevision)
         run: |

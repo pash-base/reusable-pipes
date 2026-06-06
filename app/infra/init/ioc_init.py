@@ -8,6 +8,7 @@ from core.application.build_image_use_case import BuildImageUseCase
 from core.application.push_image_use_case import PushImageUseCase
 from core.application.update_image_tag_use_case import UpdateImageTagUseCase
 from core.application.sync_argocd_use_case import SyncArgoCDUseCase
+from core.application.update_release_target_use_case import UpdateReleaseTargetUseCase
 from core.application.resolve_app_names_use_case import ResolveAppNamesUseCase
 from core.application.install_use_case import InstallUseCase
 from core.application.fmt_use_case import FmtUseCase
@@ -31,6 +32,7 @@ class IocInit:
         push_uc = PushImageUseCase(logger=logger)
         update_uc = UpdateImageTagUseCase(github_client=github_client, logger=logger)
         sync_uc = SyncArgoCDUseCase(argocd_client=argocd_client, logger=logger)
+        update_release_target_uc = UpdateReleaseTargetUseCase(logger=logger)
         resolve_uc = ResolveAppNamesUseCase(logger=logger)
         install_uc = InstallUseCase(logger=logger)
         fmt_uc = FmtUseCase(logger=logger)
@@ -59,5 +61,6 @@ class IocInit:
             test_uc=test_uc,
             cover_uc=cover_uc,
             validate_uc=validate_uc,
+            update_release_target_uc=update_release_target_uc,
             logger=logger,
         )
