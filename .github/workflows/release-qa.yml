@@ -83,7 +83,9 @@ jobs:
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
       - name: Sync ArgoCD (hom)
-        run: pash-pipe sync-argocd --app-name ${{ steps.resolve.outputs.app_name }}
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe sync-argocd --app-name ${{ steps.resolve.outputs.app_name }}
         env:
           ARGOCD_INSECURE: "true"
 
