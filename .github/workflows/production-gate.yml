@@ -117,7 +117,6 @@ jobs:
         id: resolve
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           APP_NAME=$(pash-pipe resolve-app-names --path app/.pashfile --env prd --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['prd'])")
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
@@ -144,7 +143,6 @@ jobs:
       - name: Criar tag e GitHub Release
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           VERSION="${GITHUB_HEAD_REF#release/v}"
           TAG="v${VERSION}"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -159,6 +157,5 @@ jobs:
       - name: Converter PR para ready (remover draft)
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           PR_NUMBER="${{ github.event.pull_request.number }}"
           gh pr ready "$PR_NUMBER" || true

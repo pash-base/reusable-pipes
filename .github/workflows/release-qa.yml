@@ -91,7 +91,6 @@ jobs:
         id: resolve
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           APP_NAME=$(pash-pipe resolve-app-names --path app/.pashfile --env hom --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['hom'])")
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
@@ -115,7 +114,6 @@ jobs:
       - name: Create PR release → master (draft)
         run: |
           source ~/.zshrc 2>/dev/null || true
-          |
           RELEASE_BRANCH="${GITHUB_BASE_REF}"
           VERSION="${RELEASE_BRANCH#release/v}"
 
