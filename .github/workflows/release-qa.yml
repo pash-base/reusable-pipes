@@ -2,9 +2,6 @@ name: Reusable — Release QA
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: false
 
 permissions:
   contents: write
