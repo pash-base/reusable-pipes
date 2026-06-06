@@ -13,7 +13,7 @@ class UpdateReleaseTargetUseCase(IUpdateReleaseTargetUseCase):
         self._logger.info(f"Atualizando {app_name} targetRevision → {branch} via GitOps")
         token = os.environ.get("GH_TOKEN", "")
         sigla = app_name.split("-")[0]
-        shortname = "-".join(app_name.split("-")[1:3])
+        shortname = app_name.split("-")[1]
         config_file = f"argocd/applications/{sigla}/{shortname}/{app_name}.yaml"
         clone_url = f"https://x-access-token:{token}@github.com/pash-base/platform-config.git"
 

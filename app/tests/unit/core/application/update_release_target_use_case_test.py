@@ -46,8 +46,7 @@ def test_should_derive_sigla_and_shortname_from_app_name(mocker):
     assert mock_open.called
     all_args = [call.args[0] for call in mock_open.call_args_list if "argocd" in str(call.args[0])]
     assert len(all_args) > 0
-    assert "doc" in all_args[0]
-    assert "portal" in all_args[0]
+    assert all_args[0] == "/tmp/platform-config/argocd/applications/doc/portal/doc-portal-platform-hom.yaml"
 
 
 def test_should_update_only_values_source_in_yaml(mocker):
