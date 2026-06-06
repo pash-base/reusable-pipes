@@ -14,6 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install pash-pipe
+        uses: actions/checkout@v4
+        with:
+          repository: pash-base/reusable-pipes
+          path: /tmp/reusable-pipes
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pash-pipe
+        run: pip install -e /tmp/reusable-pipes/app --quiet
+
       - name: Install dependencies
         run: pash-pipe install --path app/.pashfile
 
