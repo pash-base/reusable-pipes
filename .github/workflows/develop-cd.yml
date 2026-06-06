@@ -25,7 +25,9 @@ jobs:
           echo "PYTHONPATH=/tmp/reusable-pipes/app:$PYTHONPATH" >> $GITHUB_ENV
 
       - name: Validate (install + fmt + lint + test + cover)
-        run: pash-pipe validate --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe validate --path app/.pashfile
 
   deploy-dev:
     name: 🚀 Deploy → Development
@@ -59,23 +61,31 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build imagem
-        run: pash-pipe build --tag ${{ github.sha }} --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe build --tag ${{ github.sha }} --path app/.pashfile
         env:
           REGISTRY: ghcr.io
 
       - name: Push imagem
-        run: pash-pipe push --tag ${{ github.sha }} --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe push --tag ${{ github.sha }} --path app/.pashfile
         env:
           REGISTRY: ghcr.io
 
       - name: Atualizar image tag (dev)
-        run: pash-pipe update-image-tag --env dev --tag ${{ github.sha }} --path app/.pashfile --branch develop
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe update-image-tag --env dev --tag ${{ github.sha }} --path app/.pashfile --branch develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolver nome da app ArgoCD (dev)
         id: resolve
         run: |
+          source ~/.zshrc 2>/dev/null || true
+          |
           APP_NAME=$(pash-pipe resolve-app-names --path app/.pashfile --env dev --output json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['dev'])")
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 

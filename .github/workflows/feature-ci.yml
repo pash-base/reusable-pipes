@@ -25,16 +25,24 @@ jobs:
           echo "PYTHONPATH=/tmp/reusable-pipes/app:$PYTHONPATH" >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: pash-pipe install --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe install --path app/.pashfile
 
       - name: Format check
-        run: pash-pipe fmt --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe fmt --path app/.pashfile
 
       - name: Lint
-        run: pash-pipe lint --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe lint --path app/.pashfile
 
       - name: Unit Tests
-        run: pash-pipe test --path app/.pashfile
+        run: |
+          source ~/.zshrc 2>/dev/null || true
+          pash-pipe test --path app/.pashfile
 
   open-pr-to-develop:
     name: 📬 Open PR → develop
