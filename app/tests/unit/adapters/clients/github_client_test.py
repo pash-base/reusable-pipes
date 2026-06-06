@@ -18,7 +18,7 @@ def test_should_run_git_commands_when_commit_and_push_is_called(mocker):
     # Assert
     assert mock_run.call_count == 4
     calls = mock_run.call_args_list
-    assert calls[0].args[0] == ["git", "pull", "origin", "develop", "--rebase"]
+    assert calls[0].args[0] == ["git", "pull", "--rebase", "--autostash", "origin", "develop"]
     assert calls[1].args[0] == ["git", "add", "app/_environments/dev/values-dev.yaml"]
     assert calls[2].args[0] == ["git", "commit", "-m", "chore(gitops): update tag"]
     assert calls[3].args[0] == ["git", "push", "origin", "develop"]

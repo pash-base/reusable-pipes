@@ -11,7 +11,7 @@ class GithubClient(IGithubClient):
 
     def commit_and_push(self, file_path: str, message: str, branch: str) -> None:
         self._logger.info(f"Commitando {file_path} na branch {branch}")
-        subprocess.run(["git", "pull", "origin", branch, "--rebase"], check=False)
+        subprocess.run(["git", "pull", "--rebase", "--autostash", "origin", branch], check=True)
         subprocess.run(["git", "add", file_path], check=True)
         subprocess.run(["git", "commit", "-m", message], check=True)
         subprocess.run(["git", "push", "origin", branch], check=True)
