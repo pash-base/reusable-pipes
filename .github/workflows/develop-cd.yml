@@ -133,6 +133,7 @@ jobs:
 
       - name: Open PR develop → release
         run: |
+          source ~/.zshrc 2>/dev/null || true
           VERSION="${{ steps.version.outputs.version }}"
           BRANCH="${{ steps.version.outputs.branch }}"
 
