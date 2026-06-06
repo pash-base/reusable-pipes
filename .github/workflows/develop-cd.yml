@@ -82,7 +82,7 @@ jobs:
       - name: Get ArgoCD token
         run: |
           source ~/.zshrc 2>/dev/null || true
-          TOKEN=$(curl -s -X POST "$ARGOCD_URL/api/v1/session"             -H "Content-Type: application/json"             -d "{"username":"$ARGOCD_USER","password":"$ARGOCD_PASS"}" |             python3 -c "import sys,json; print(json.load(sys.stdin)['token'])" 2>/dev/null)
+          TOKEN=$(curl -s -X POST "$ARGOCD_URL/api/v1/session"             -H "Content-Type: application/json"             -d "{"username":"$ARGOCD_USER","password":"$ARGOCD_PASS"}" |             python3 -c "import sys,json; print(json.load(sys.stdin)['token'])" 2>/dev/null) || true
           echo "ARGOCD_TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Sync ArgoCD (dev)
